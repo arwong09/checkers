@@ -22,20 +22,6 @@ class Board
     delta == 1 ? perform_slide!(from_pos, to_pos) : perform_jump!(from_pos, to_pos)
   end
   
-  def perform_slide!(from_pos, to_pos)
-    piece = self[from_pos]
-    
-    self[from_pos] = nil
-    self[to_pos] = piece
-  end
-  
-  def perform_jump!(from_pos, to_pos)
-    piece = self[from_pos]
-    captured_piece = self[pos_between(from_pos, to_pos)]
-    self[from_pos], captured_piece = nil
-    self[to_pos] = piece
-  end
-  
   def pos_between(from_pos, to_pos)
     [(from_pos.first - to_pos.first).abs, (from_pos.first - to_pos.first).abs]
   end
@@ -43,6 +29,20 @@ class Board
   def [](pos)
     row, col = pos
     @grid[row][col]
+  end
+  
+  def perform_slide(from_pos, to_pos)
+    piece = self[from_pos]
+    
+    self[from_pos] = nil
+    self[to_pos] = piece
+  end
+  
+  def perform_jump(from_pos, to_pos)
+    piece = self[from_pos]
+    captured_piece = self[pos_between(from_pos, to_pos)]
+    self[from_pos], captured_piece = nil
+    self[to_pos] = piece
   end
   
   def all_pieces
@@ -54,12 +54,14 @@ class Board
   end
   
   def render
-    @grid.map do |row|
+    rendered_board = @grid.map do |row|
       row.map do |piece|
-        
        piece.nil? ? "." : piece.render
      end.join(' ')
-   end
+    end
+    
+    rendered_board.each_with_index { |row,index| row.prepend(index.to_s + ' ') }
+    rendered_board.unshift('  0 1 2 3 4 5 6 7 ')
   end
   
   protected

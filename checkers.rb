@@ -11,22 +11,37 @@ class Piece
   end
   
   def perform_slide(target)
+    row, col = target
+    
+    if @board.grid[row][col].class != WhiteSquare
+      raise "can't slide there!"
+      return false
+    end
+    
+    @board.grid[@pos[0]][@pos[1]] = WhiteSquare.new
+    @board.grid[row][col] = self
     @pos = target
+    true
   end
   
   def perform_jump(target)
     @pos = target
-    
   end
   
-  def promote?
+  def maybe_promote
     
+  end
+end
+
+class BlackSquare
+  def to_s
+    "\u25A0"
   end
 end
 
 class WhiteSquare
   def to_s
-    return "\u25A0"
+    "\u25A1"
   end
 end
 
@@ -40,17 +55,23 @@ class Board
     8.times do |row|
       8.times do |col|
         if (row + col).even?
-          @grid[row][col] = WhiteSquare.new 
+          @grid[row][col] = BlackSquare.new 
         else
-          @grid[row][col] = Piece.new(row, col, self) unless row == 3 || row == 4
+          if row == 3 || row == 4
+            @grid[row][col] = WhiteSquare.new
+          else 
+            @grid[row][col] = Piece.new(row, col, self)
+          end
         end
       end
     end
   end
   
   def print_board
+    system('clear')
+    puts "   0 1 2 3 4 5 6 7  "
     8.times do |row|
-      row_visual = ""
+      row_visual = "#{row}  "
       
       8.times do |col|
         row_visual << @grid[row][col].to_s << " "
@@ -64,4 +85,7 @@ end
 
 checkers = Board.new
 checkers.place_pieces
+checkers.print_board
+sleep(1)
+checkers.grid[2][7].perform_slide([3,6])
 checkers.print_board

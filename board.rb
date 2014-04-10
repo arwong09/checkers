@@ -7,20 +7,25 @@ class Board
   def initialize
     @grid = Array.new(8) { Array.new(8) }
     place_pieces
+    # Piece.new(:red, self, [5,5])
+    # Piece.new(:black, self, [2,2])
   end
   
   def valid_pos?(pos)
     pos.all? { |coord| coord.between?(0,7) }
   end
   
-  def move_piece(color, from_pos, to_pos)
+  def move_piece(color, move_sequence)
+    from_pos, to_pos = move_sequence.first, move_sequence.last
+    
     piece = self[from_pos]
     raise "No piece there." if self[from_pos].nil?
     raise "Move your own piece!" if piece.color != color
     raise "Can't move there." if !piece.moves.include?(to_pos)
     
-    delta = (from_pos.first - to_pos.first).abs
-    delta == 1 ? piece.perform_slide!(to_pos) : piece.perform_jump!(to_pos)
+    piece.perform_moves!(move_sequence)
+
+    piece.maybe_promote
   end
   
   def remove_piece!(pos)
@@ -29,7 +34,7 @@ class Board
   end
   
   def pos_between(from_pos, to_pos)
-    [num_between(from_pos.first, to_pos.first), num_between(from_pos.last, to_pos.last)]
+    [(from_pos.first + to_pos.first) / 2, (from_pos.last + to_pos.last) / 2]
   end
   
   def all_pieces
@@ -62,10 +67,10 @@ class Board
   end
   
   protected  
-  def num_between(num1, num2)
-    bigger = (num1 < num2) ? num2 : num1
-    bigger - 1
-  end
+  # def num_between(num1, num2)
+ #    bigger = (num1 < num2) ? num2 : num1
+ #    bigger - 1
+ #  end
   
   def place_pieces
     8.times do |row|
@@ -73,9 +78,9 @@ class Board
         
         pos = [row, col]
         if row <= 2
-          self[pos] = Piece.new(:red, self, [row, col]) if (row + col).even?
+          Piece.new(:red, self, [row, col]) if (row + col).even?
         elsif row >= 5
-          self[pos] = Piece.new(:black, self, [row, col]) if (row + col).even?
+          Piece.new(:black, self, [row, col]) if (row + col).even?
         end
         
       end

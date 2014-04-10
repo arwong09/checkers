@@ -12,25 +12,25 @@ class Piece
     @board.add_piece(@pos, self)
   end
   
-  def moves
-    all_valid_moves = validate_moves(find_all_moves, find_all_jumps)
+  def moves #returns array of all valid moves
+    validate_moves(find_all_moves, find_all_jumps)
   end
   
-  def find_all_moves
+  def find_all_moves #returns all moves within the board bounds
     row, col = @pos
     
     all_moves = move_deltas.map { |delta| [delta.first + row, delta.last + col] }
-    moves_on_board = all_moves.select { |move| @board.valid_pos?(move) }
+    all_moves.select { |move| @board.valid_pos?(move) }
   end
   
-  def find_all_jumps
+  def find_all_jumps #returns all jumps within the board bounds
     row, col = @pos
     
     all_jumps = jump_deltas.map { |delta| [delta.first + row, delta.last + col] }
-    jumps_on_board = all_jumps.select { |jump| @board.valid_pos?(jump) }
+    all_jumps.select { |jump| @board.valid_pos?(jump) }
   end
   
-  def validate_moves(moves_on_board, jumps_on_board)
+  def validate_moves(moves_on_board, jumps_on_board) #returns valid moves and jumps on board
     valid_moves =  moves_on_board.select { |move| @board[move].nil? }
     
     valid_jumps = jumps_on_board.select do |jump|
@@ -38,8 +38,18 @@ class Piece
       !piece_between.nil? && piece_between.color != @color 
     end
     
-    p valid_moves + valid_jumps
     valid_moves + valid_jumps
+  end
+  
+  def perform_moves!(move_sequence)
+    #if move_sequence.count == 1 perform a slide or jump
+    #else perform a sequence
+    if move_sequence.count == 2  
+      from_pos, to_pos = move_sequence
+      delta = (from_pos.first - to_pos.first).abs
+      delta == 1 ? perform_slide!(to_pos) : perform_jump!(to_pos)
+    else
+    end
   end
   
   def perform_slide!(to_pos)
@@ -74,6 +84,10 @@ class Piece
   end
   
   def render
-    @color == :black ? '●' : '○'
+    if @king
+      @color == :black  ? "♚" : "♔"
+    else
+      @color == :black ? '●' : '○'
+    end
   end
 end

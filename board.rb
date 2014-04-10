@@ -15,34 +15,21 @@ class Board
   
   def move_piece(color, from_pos, to_pos)
     piece = self[from_pos]
+    raise "No piece there." if self[from_pos].nil?
     raise "Move your own piece!" if piece.color != color
-    #raise "Can't move there." unless piece.moves.include?(to_pos)
-    delta = (from_pos.first - to_pos.first).abs
+    raise "Can't move there." if !piece.moves.include?(to_pos)
     
-    delta == 1 ? perform_slide!(from_pos, to_pos) : perform_jump!(from_pos, to_pos)
+    delta = (from_pos.first - to_pos.first).abs
+    delta == 1 ? piece.perform_slide!(to_pos) : piece.perform_jump!(to_pos)
+  end
+  
+  def remove_piece!(pos)
+    self[pos].board = nil
+    self[pos] = nil
   end
   
   def pos_between(from_pos, to_pos)
-    [(from_pos.first - to_pos.first).abs, (from_pos.first - to_pos.first).abs]
-  end
-  
-  def [](pos)
-    row, col = pos
-    @grid[row][col]
-  end
-  
-  def perform_slide(from_pos, to_pos)
-    piece = self[from_pos]
-    
-    self[from_pos] = nil
-    self[to_pos] = piece
-  end
-  
-  def perform_jump(from_pos, to_pos)
-    piece = self[from_pos]
-    captured_piece = self[pos_between(from_pos, to_pos)]
-    self[from_pos], captured_piece = nil
-    self[to_pos] = piece
+    [num_between(from_pos.first, to_pos.first), num_between(from_pos.last, to_pos.last)]
   end
   
   def all_pieces
@@ -64,10 +51,20 @@ class Board
     rendered_board.unshift('  0 1 2 3 4 5 6 7 ')
   end
   
-  protected
   def []=(pos, piece)
     row, col = pos
     @grid[row][col] = piece    
+  end
+  
+  def [](pos)
+    row, col = pos
+    @grid[row][col]
+  end
+  
+  protected  
+  def num_between(num1, num2)
+    bigger = (num1 < num2) ? num2 : num1
+    bigger - 1
   end
   
   def place_pieces

@@ -1,13 +1,12 @@
 require_relative 'board'
-require 'debugger'
 
 class Piece
-  attr_reader :color
+  attr_reader :color, :pos, :king
   attr_accessor :board
   
-  def initialize(color, board, pos)
+  def initialize(color, board, pos, king = false)
     @color, @board, @pos = color, board, pos
-    @king = false
+    @king = king
         
     @board.add_piece(@pos, self)
   end
@@ -42,14 +41,31 @@ class Piece
   end
   
   def perform_moves!(move_sequence)
-    #if move_sequence.count == 1 perform a slide or jump
-    #else perform a sequence
     if move_sequence.count == 2  
       from_pos, to_pos = move_sequence
       delta = (from_pos.first - to_pos.first).abs
       delta == 1 ? perform_slide!(to_pos) : perform_jump!(to_pos)
     else
+      
+      if valid_move_sequence?(move_sequence.dup, @board)
+        move_sequence.shift #discard from_pos position
+        perform_jump!(move_sequence.shift) until move_sequence.empty?
+      end
     end
+  end
+ 
+  
+  def valid_move_sequence?(move_sequence, board)
+    return true if move_sequence.count == 1
+    curr_pos = move_sequence.shift #discard current position
+    test_board = board.dup
+    duped_piece = test_board[curr_pos]
+    next_move = move_sequence[0]
+    
+    #debugger
+    raise "Illegal Move Sequence!" if !duped_piece.moves.include?(next_move)
+    duped_piece.perform_jump!(next_move)
+    valid_move_sequence?(move_sequence, test_board)
   end
   
   def perform_slide!(to_pos)

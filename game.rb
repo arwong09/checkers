@@ -1,4 +1,3 @@
-require_relative 'piece'
 require_relative 'board'
 
 class Game
@@ -15,6 +14,7 @@ class Game
         get_input
       rescue => e
         puts e.message
+        #puts e.backtrace
         retry
       end
       
@@ -29,7 +29,6 @@ class Game
   def get_input
     puts "#{@turn.capitalize}'s turn.  Move a piece: ex. 4,4 5,5"
     
-    #find move sequence
     move_sequence = gets.chomp.split(' ')
     move_sequence = move_sequence.map do |coords|
       coords.split(',').map{ |n| Integer(n) }
@@ -43,7 +42,6 @@ class Game
   end
   
   def game_over?
-    #@board.all_pieces.none? { |piece| piece.color == :black } || @board.all_pieces.none? { |piece| piece.color == :red }
     [:black, :red].any? do |color|
       @board.all_pieces.none? { |piece| piece.color == color }
     end

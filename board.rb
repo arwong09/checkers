@@ -1,14 +1,11 @@
 require_relative 'piece'
-require 'debugger'
 
 class Board
   attr_accessor :grid
   
-  def initialize
+  def initialize(init_pieces = true)
     @grid = Array.new(8) { Array.new(8) }
-    place_pieces
-    # Piece.new(:red, self, [5,5])
-    # Piece.new(:black, self, [2,2])
+    place_pieces(init_pieces)
   end
   
   def valid_pos?(pos)
@@ -16,7 +13,7 @@ class Board
   end
   
   def move_piece(color, move_sequence)
-    from_pos, to_pos = move_sequence.first, move_sequence.last
+    from_pos, to_pos = move_sequence[0], move_sequence[1]
     
     piece = self[from_pos]
     raise "No piece there." if self[from_pos].nil?
@@ -45,6 +42,14 @@ class Board
     self[pos] = piece
   end
   
+  def dup
+    duped_board = Board.new(false)
+    all_pieces.each do |piece|
+      Piece.new(piece.color, duped_board, piece.pos, piece.king)
+    end
+    duped_board
+  end
+  
   def render
     rendered_board = @grid.map do |row|
       row.map do |piece|
@@ -53,7 +58,7 @@ class Board
     end
     
     rendered_board.each_with_index { |row,index| row.prepend(index.to_s + ' ') }
-    rendered_board.unshift('  0 1 2 3 4 5 6 7 ')
+    rendered_board.push('  0 1 2 3 4 5 6 7 ')
   end
   
   def []=(pos, piece)
@@ -66,13 +71,10 @@ class Board
     @grid[row][col]
   end
   
-  protected  
-  # def num_between(num1, num2)
- #    bigger = (num1 < num2) ? num2 : num1
- #    bigger - 1
- #  end
-  
-  def place_pieces
+  protected   
+  def place_pieces(init_pieces)
+    return if init_pieces == false
+
     8.times do |row|
       8.times do |col|
         
